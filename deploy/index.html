@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 외부로 데이터를 보낼 수 없도록 같은 출처(이 폴더)의 파일만 허용 -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>PriceGuard | 병의원 시술 가격표 검증</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 아이콘 (외부 아이콘 글꼴 대신 내장 SVG) -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M3 3v8h8V3H3zm6 6H5V5h4v4zm-6 4v8h8v-8H3zm6 6H5v-4h4v4zm4-16v8h8V3h-8zm6 6h-4V5h4v4zm-6 4v8h8v-8h-8zm6 6h-4v-4h4v4z"/></symbol>
+    <symbol id="i-upload-file" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.84V19h2v-4.16l1.59 1.59L16 15.01 12.01 11z"/></symbol>
+    <symbol id="i-rule" viewBox="0 0 24 24"><path d="M16.54 11 13 7.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L16.54 11zM11 7H2v2h9V7zm10 6.41L19.59 12 17 14.59 14.41 12 13 13.41 15.59 16 13 18.59 14.41 20 17 17.41 19.59 20 21 18.59 18.41 16 21 13.41zM11 15H2v2h9v-2z"/></symbol>
+    <symbol id="i-tune" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></symbol>
+    <symbol id="i-compare" viewBox="0 0 24 24"><path d="M9.01 14H2v2h7.01v3L13 15l-3.99-4v3zm5.98-1v-3H22V8h-7.01V5L11 9l3.99 4z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+    <symbol id="i-verified" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></symbol>
+    <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></symbol>
+    <symbol id="i-cloud-up" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M22 8l-4-4v3H3v2h15v3l4-4zM2 16l4 4v-3h15v-2H6v-3l-4 4z"/></symbol>
+    <symbol id="i-table" viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v4h14V5H5zm0 6v8h4v-8H5zm6 0v8h8v-8h-8z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><path d="M22 11V3h-7v3H9V3H2v8h7V8h2v10h4v3h7v-8h-7v3h-2V8h2v3h7z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></symbol>
+    <symbol id="i-brand" viewBox="0 0 24 24"><path d="M4 5h16v3H4zM4 10.5h10v3H4zM4 16h13v3H4z"/></symbol>
+  </svg>
+
+  <!-- ===== 사이드바 ===== -->
+  <aside id="sidebar" class="sidebar" aria-label="메인 메뉴">
+    <div class="sb-top">
+      <div class="sb-brand">
+        <img class="sb-logo" src="assets/brand/priceguard-logo-display.png" alt="PriceGuard" width="208" height="52">
+      </div>
+      <span class="sb-sub">병의원 시술 가격표 검증 대시보드</span>
+      <span id="sb-version" class="sb-version">규칙 불러오는 중</span>
+    </div>
+    <div class="sb-menu">
+      <div class="sb-label">메인 메뉴</div>
+      <nav class="sb-nav">
+        <a class="nav-link" data-view="dashboard" href="#/dashboard"><svg class="ic"><use href="#i-grid"/></svg>대시보드</a>
+        <a class="nav-link" data-view="upload" href="#/upload"><svg class="ic"><use href="#i-upload-file"/></svg>파일 업로드</a>
+        <a class="nav-link" data-view="validation" href="#/validation"><svg class="ic"><use href="#i-rule"/></svg>데이터 검증</a>
+        <a class="nav-link" data-view="rules" href="#/rules"><svg class="ic"><use href="#i-tune"/></svg>정제 규칙</a>
+        <a class="nav-link" data-view="history" href="#/history"><svg class="ic"><use href="#i-history"/></svg>변경 기록</a>
+        <a class="nav-link" data-view="benchmark" href="#/benchmark"><svg class="ic"><use href="#i-compare"/></svg>정답 대조</a>
+      </nav>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-file">
+        <div class="sb-file-row">
+          <span id="sb-file-name" class="sb-file-name">선택된 파일 없음</span>
+          <span id="sb-file-rows" class="sb-file-rows"></span>
+        </div>
+        <div class="sb-status"><span id="sb-dot" class="dot dot-idle"></span><span id="sb-status-text">파일 대기 중</span></div>
+      </div>
+      <div class="sb-secure"><svg class="ic"><use href="#i-lock"/></svg>브라우저 안에서만 처리 · 서버 전송 없음</div>
+    </div>
+  </aside>
+  <div id="sb-backdrop" class="sb-backdrop" hidden></div>
+
+  <!-- ===== 상단 헤더 ===== -->
+  <header class="topbar">
+    <div class="tb-left">
+      <button id="menu-btn" class="icon-btn menu-btn" type="button" aria-label="메뉴 열기" aria-controls="sidebar" aria-expanded="false"><svg class="ic"><use href="#i-menu"/></svg></button>
+      <img class="tb-logo" src="assets/brand/priceguard-logo-display.png" alt="PriceGuard" width="112" height="28">
+      <span class="crumb-root">병원 시술수가 데이터 관리</span>
+      <span class="crumb-sep">/</span>
+      <span id="crumb-current" class="crumb-current">파일 업로드</span>
+    </div>
+    <div class="tb-right">
+      <span id="rules-badge" class="tb-badge"><svg class="ic ic-primary"><use href="#i-verified"/></svg><span id="rules-badge-text">규칙 불러오는 중</span></span>
+      <button class="btn btn-primary" type="button" data-download="cleaned" disabled><svg class="ic"><use href="#i-download"/></svg><span class="hide-sm">정리본 엑셀 다운로드</span></button>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="page">
+      <div id="global-alert" class="alert alert-error" role="alert" hidden></div>
+
+      <!-- ===== 파일 업로드 ===== -->
+      <section class="view" id="view-upload" data-view="upload" data-title="파일 업로드" hidden>
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">데이터 검증 센터 <span>/</span> <b>입력</b></div>
+            <h1>가격표 업로드</h1>
+            <p class="sub">엑셀 파일을 올리면 오류를 확인하고 정리할 수 있습니다.</p>
+          </div>
+          <span class="pill-soft"><svg class="ic ic-tertiary"><use href="#i-shield"/></svg>서버 전송 없음 · 브라우저 처리</span>
+        </div>
+
+        <div class="narrow">
+          <div class="card upload-card">
+            <div class="accent-line"></div>
+
+            <div id="rules-picker" class="alert alert-warn" hidden>
+              <p><strong>규칙 파일을 자동으로 불러오지 못했습니다.</strong> 파일을 더블클릭해서 열면 브라우저가 보안 때문에 규칙 파일 읽기를 막습니다.</p>
+              <p>아래 버튼으로 <code>rules/병의원수가표.json</code>을 직접 선택하거나, 안내서의 "로컬 서버로 실행" 방법을 사용해 주세요.</p>
+              <label class="btn btn-soft">
+                규칙 파일 선택
+                <input id="rules-input" type="file" accept=".json,application/json" class="visually-hidden">
+              </label>
+            </div>
+
+            <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-describedby="drop-help">
+              <div class="drop-icon"><svg class="ic"><use href="#i-cloud-up"/></svg></div>
+              <h2 class="drop-title">엑셀 파일을 여기에 끌어다 놓으세요</h2>
+              <p class="sub">또는 파일 탐색기에서 직접 선택할 수 있습니다.</p>
+              <label class="btn btn-primary btn-lg">
+                <svg class="ic"><use href="#i-folder"/></svg>파일 선택
+                <input id="file-input" type="file" accept=".xlsx,.xls,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" class="visually-hidden">
+              </label>
+              <div id="drop-help" class="caption muted">지원 형식: .xlsx, .xls, .xlsm</div>
+            </div>
+
+            <div id="upload-feedback" class="upload-feedback" hidden>
+              <div class="uf-left">
+                <div class="uf-icon"><svg class="ic"><use href="#i-doc"/></svg></div>
+                <div class="uf-text">
+                  <div class="uf-name-row"><span id="meta-name" class="uf-name">-</span><span id="meta-size" class="caption muted"></span></div>
+                  <div class="uf-meta">
+                    <span class="dot dot-ok"></span>
+                    <span>시트 <b id="meta-sheets">-</b></span><span class="sep">·</span>
+                    <span>데이터 <b id="meta-rows">-</b></span><span class="sep">·</span>
+                    <span>컬럼 <b id="meta-cols">-</b></span><span class="sep">·</span>
+                    <span id="meta-rules">정제 완료</span>
+                  </div>
+                </div>
+              </div>
+              <div class="uf-actions">
+                <button id="btn-other-file" class="btn btn-white" type="button">다른 파일 선택</button>
+                <button class="btn btn-primary" type="button" data-goto="dashboard">결과 보기<svg class="ic"><use href="#i-arrow"/></svg></button>
+              </div>
+            </div>
+            <p id="meta-note" class="caption muted meta-note" hidden></p>
+          </div>
+
+          <div class="card">
+            <div class="card-title-row">
+              <div class="card-title"><svg class="ic ic-primary"><use href="#i-flow"/></svg>정리 3단계</div>
+              <span id="rules-status" class="caption muted">규칙 파일을 불러오는 중…</span>
+            </div>
+            <div class="steps">
+              <div class="step" id="step-1"><div class="step-head"><span class="step-num">1</span><h3>파일 업로드</h3></div><p>가격표 엑셀을 올리면 머리글과 컬럼을 자동으로 확인합니다.</p></div>
+              <div class="step" id="step-2"><div class="step-head"><span class="step-num">2</span><h3>오류 확인</h3></div><p>승인된 정제 규칙으로 형식을 통일하고, 판단이 필요한 값은 검토 대상으로 표시합니다.</p></div>
+              <div class="step" id="step-3"><div class="step-head"><span class="step-num">3</span><h3>정리본 다운로드</h3></div><p>정리본 엑셀과 변경 기록을 이 컴퓨터에 바로 저장합니다.</p></div>
+            </div>
+          </div>
+
+          <div class="secure-banner">
+            <div class="secure-icon"><svg class="ic"><use href="#i-shield"/></svg></div>
+            <p><b>로컬 처리:</b> 업로드한 파일은 서버에 저장되거나 전송되지 않고, 이 브라우저 안에서만 처리됩니다.</p>
+            <span class="caption muted secure-tag"><svg class="ic"><use href="#i-lock"/></svg>외부 전송 차단</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 대시보드 ===== -->
+      <section class="view" id="view-dashboard" data-view="dashboard" data-title="검증 현황" hidden>
+        <div class="page-head">
+          <div>
+            <h1>가격표 검증 현황</h1>
+            <p class="sub">업로드한 가격표의 오류와 정제 결과를 한눈에 확인하세요.</p>
+          </div>
+          <div class="head-actions" data-has-result hidden>
+            <button class="btn btn-white" type="button" data-download="log"><svg class="ic"><use href="#i-download"/></svg>변경 기록 다운로드</button>
+            <button class="btn btn-primary" type="button" data-download="cleaned"><svg class="ic"><use href="#i-doc"/></svg>정리본 다운로드 (.xlsx)</button>
+          </div>
+        </div>
+
+        <div class="empty-state" data-needs-result>
+          <svg class="ic"><use href="#i-upload-file"/></svg>
+          <p>아직 검사한 파일이 없습니다.</p>
+          <button class="btn btn-primary" type="button" data-goto="upload">파일 업로드로 이동</button>
+        </div>
+
+        <div class="stack" data-has-result hidden>
+          <div class="card file-banner">
+            <div class="fb-left">
+              <span class="fb-file"><svg class="ic ic-outline"><use href="#i-doc"/></svg><span id="dash-file-name">-</span></span>
+              <span id="dash-rows" class="caption muted"></span>
+              <span id="dash-rules" class="caption muted"></span>
+              <span class="status-pill"><span class="dot dot-ok"></span>검증 완료</span>
+            </div>
+            <div class="fb-right">
+              <span id="dash-time" class="caption muted"></span>
+              <button id="btn-rerun" class="link-btn" type="button">다시 실행해 결과 비교</button>
+              <button class="link-btn" type="button" data-goto="upload">새 파일 업로드<svg class="ic"><use href="#i-arrow"/></svg></button>
+            </div>
+          </div>
+          <div id="rerun-result" class="alert" hidden></div>
+
+          <div id="kpis" class="kpi-grid"></div>
+          <div id="threshold-notice" class="alert alert-warn" hidden></div>
+
+          <div class="grid-12">
+            <div class="card col-8 err-card">
+              <div class="card-head">
+                <div>
+                  <h2>오류 유형 현황</h2>
+                  <p class="caption muted">정제 규칙별 발생 건수</p>
+                </div>
+                <span id="err-total" class="tag-mono"></span>
+              </div>
+              <div class="err-groups">
+                <div>
+                  <div class="group-label">자동 수정 <span class="muted">(칸·행)</span></div>
+                  <div id="chart-fix" class="bars"></div>
+                </div>
+                <div>
+                  <div class="group-label">검토 표시 <span class="muted">(해당 행)</span></div>
+                  <div id="chart-review" class="bars"></div>
+                </div>
+              </div>
+              <div class="card-foot">
+                <span id="err-foot" class="caption muted"></span>
+                <button class="link-btn" type="button" data-goto="rules">정제 규칙 보기<svg class="ic"><use href="#i-chevron"/></svg></button>
+              </div>
+            </div>
+
+            <div class="card col-4 rec-card">
+              <div class="card-head">
+                <div>
+                  <h2>검토 권장 항목</h2>
+                  <p id="rec-sub" class="caption muted"></p>
+                </div>
+                <span id="rec-tag" class="tag-error"></span>
+              </div>
+              <div id="review-list" class="rec-list"></div>
+              <button id="btn-review-all" class="btn btn-dark btn-block" type="button" data-goto="validation" data-filter="review"></button>
+            </div>
+          </div>
+
+          <div class="card card-flush">
+            <div class="card-head pad">
+              <div>
+                <h2>처리 상세 내역</h2>
+                <p class="caption muted">자동 수정, 검토 표시, 중복 삭제가 일어난 행</p>
+              </div>
+              <div class="head-actions">
+                <div id="dash-seg" class="segmented" role="group" aria-label="처리 내역 필터"></div>
+                <button class="btn btn-soft" type="button" data-goto="validation">검증 화면으로 이동<svg class="ic"><use href="#i-arrow"/></svg></button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="tbl" id="dash-table"><thead></thead><tbody></tbody></table>
+            </div>
+            <div class="tbl-foot">
+              <span id="dash-page-info"></span>
+              <div class="pager">
+                <button id="dash-prev" class="btn btn-mini" type="button">이전</button>
+                <span id="dash-page" class="pager-num"></span>
+                <button id="dash-next" class="btn btn-mini" type="button">다음</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 데이터 검증 ===== -->
+      <section class="view" id="view-validation" data-view="validation" data-title="데이터 검증" hidden>
+        <div class="page-head">
+          <div>
+            <div class="title-row"><h1>데이터 검증</h1><span id="val-badges" class="title-badges"></span></div>
+            <p class="sub">원본과 정리본을 비교하고, 검토가 필요한 항목을 확인하세요.</p>
+          </div>
+          <div class="head-actions" data-has-result hidden>
+            <button class="btn btn-primary" type="button" data-download="cleaned"><svg class="ic"><use href="#i-download"/></svg>정리본 다운로드</button>
+          </div>
+        </div>
+
+        <div class="empty-state" data-needs-result>
+          <svg class="ic"><use href="#i-upload-file"/></svg>
+          <p>파일을 올리면 원본과 정리본 비교 표가 여기에 표시됩니다.</p>
+          <button class="btn btn-primary" type="button" data-goto="upload">파일 업로드로 이동</button>
+        </div>
+
+        <div class="stack" data-has-result hidden>
+          <div id="val-kpis" class="kpi-grid kpi-compact"></div>
+
+          <div class="card toolbar">
+            <div class="tb-group">
+              <div class="search">
+                <svg class="ic"><use href="#i-search"/></svg>
+                <input id="search" type="search" placeholder="시술코드 또는 시술명 검색" aria-label="시술코드 또는 시술명 검색">
+              </div>
+              <div id="filter-chips" class="segmented" role="group" aria-label="상태 필터"></div>
+            </div>
+            <div class="tb-group">
+              <select id="filter-rule" class="select" aria-label="오류 유형"></select>
+              <select id="view-mode" class="select" aria-label="보기 방식">
+                <option value="diff">보기: 정리본 + 변경 표시</option>
+                <option value="orig">보기: 원본 값</option>
+                <option value="clean">보기: 정리본 값</option>
+              </select>
+              <span id="cmp-count" class="caption muted tb-count"></span>
+              <button id="btn-reset-filter" class="icon-btn" type="button" title="필터 초기화" aria-label="필터 초기화"><svg class="ic"><use href="#i-reset"/></svg></button>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="card card-flush split-main">
+              <div class="sheet-strip">
+                <span class="strip-title">스프레드시트 뷰어</span>
+                <span class="strip-sep">|</span>
+                <span class="caption muted">행을 누르면 오른쪽에서 상세 검토 사유를 확인할 수 있습니다.</span>
+                <span class="legend">
+                  <span><i class="sw sw-chg"></i>자동 수정된 칸</span>
+                  <span><i class="sw sw-flag"></i>검토가 필요한 칸</span>
+                  <span><i class="sw sw-del"></i>삭제된 중복 행</span>
+                </span>
+              </div>
+              <div class="table-wrap table-tall" id="cmp-table-wrap">
+                <table class="tbl tbl-sheet" id="cmp-table"><thead></thead><tbody></tbody></table>
+              </div>
+              <div class="tbl-foot">
+                <span id="cmp-foot-info"></span>
+                <div class="pager">
+                  <button id="btn-prev-err" class="btn btn-mini" type="button">이전 검토 행</button>
+                  <span id="err-pos" class="pager-num"></span>
+                  <button id="btn-next-err" class="btn btn-mini" type="button">다음 검토 행</button>
+                </div>
+              </div>
+            </div>
+            <aside id="detail" class="card inspector" aria-live="polite"></aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 정제 규칙 ===== -->
+      <section class="view" id="view-rules" data-view="rules" data-title="정제 규칙" hidden>
+        <div class="page-head">
+          <div>
+            <h1>정제 규칙</h1>
+            <p class="sub">승인된 규칙 파일(<code>rules/병의원수가표.json</code>)을 실행 순서대로 보여줍니다. 규칙을 누르면 처리 이유를 볼 수 있습니다.</p>
+          </div>
+          <div class="legend-badges">
+            <span class="badge badge-auto">자동 수정</span>
+            <span class="badge badge-review">검토 표시</span>
+            <span class="badge badge-keep">그대로 유지</span>
+          </div>
+        </div>
+        <div id="rules-list" class="rules-list"></div>
+      </section>
+
+      <!-- ===== 변경 기록 ===== -->
+      <section class="view" id="view-history" data-view="history" data-title="변경 기록" hidden>
+        <div class="page-head">
+          <div>
+            <h1>변경 기록 · 다운로드</h1>
+            <p class="sub">모든 자동 수정, 검토 표시, 중복 삭제를 원본 엑셀 행 번호와 함께 기록합니다. 파일은 이 컴퓨터에서 바로 만들어 저장됩니다.</p>
+          </div>
+        </div>
+
+        <div class="empty-state" data-needs-result>
+          <svg class="ic"><use href="#i-upload-file"/></svg>
+          <p>파일을 올리면 변경 기록과 다운로드가 여기에 표시됩니다.</p>
+          <button class="btn btn-primary" type="button" data-goto="upload">파일 업로드로 이동</button>
+        </div>
+
+        <div class="stack" data-has-result hidden>
+          <div class="dl-grid">
+            <div class="card dl-card">
+              <div class="dl-icon"><svg class="ic"><use href="#i-doc"/></svg></div>
+              <h3>정리본 엑셀</h3>
+              <p class="caption muted">시트: 정리본 · 변경기록 · 제거된_중복행<br>원본 10개 컬럼 + <code>_검토상태</code>, <code>_검토사유</code>, <code>_원본_엑셀행번호</code></p>
+              <button id="dl-cleaned" class="btn btn-primary" type="button" data-download="cleaned"><svg class="ic"><use href="#i-download"/></svg>정리본 내려받기</button>
+            </div>
+            <div class="card dl-card">
+              <div class="dl-icon"><svg class="ic"><use href="#i-history"/></svg></div>
+              <h3>변경 기록</h3>
+              <p class="caption muted">원본 엑셀 행 번호, 데이터 순번, 시술코드, 변경 컬럼, 변경 전·후 값, 처리 방식, 처리 이유, 규칙 ID</p>
+              <button id="dl-log" class="btn btn-white" type="button" data-download="log"><svg class="ic"><use href="#i-download"/></svg>변경 기록 내려받기</button>
+            </div>
+            <div class="card dl-card">
+              <div class="dl-icon"><svg class="ic"><use href="#i-table"/></svg></div>
+              <h3>제거된 중복 행</h3>
+              <p id="dl-removed-desc" class="caption muted"></p>
+              <button id="dl-removed" class="btn btn-white" type="button" data-download="removed"><svg class="ic"><use href="#i-download"/></svg>제거된 중복 행 내려받기</button>
+            </div>
+          </div>
+
+          <div class="card card-flush">
+            <div class="card-head pad">
+              <div>
+                <h2>변경 기록</h2>
+                <p id="log-sub" class="caption muted"></p>
+              </div>
+              <div id="log-seg" class="segmented" role="group" aria-label="변경 기록 필터"></div>
+            </div>
+            <div class="table-wrap table-tall">
+              <table class="tbl" id="log-table"><thead></thead><tbody></tbody></table>
+            </div>
+          </div>
+
+          <div class="card card-flush" id="removed-card">
+            <div class="card-head pad">
+              <div>
+                <h2>제거된 중복 행</h2>
+                <p class="caption muted">완전히 같은 행 중 나중에 등록된 행입니다. 먼저 등록된 행을 남겼습니다.</p>
+              </div>
+            </div>
+            <div id="removed-preview" class="table-wrap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 정답 대조 ===== -->
+      <section class="view" id="view-benchmark" data-view="benchmark" data-title="정답 대조" hidden>
+        <div class="page-head">
+          <div>
+            <h1>정답 대조 및 정확도 검증</h1>
+            <p class="sub">내 컴퓨터에 있는 정답 CSV와 정리본을 비교합니다.</p>
+          </div>
+        </div>
+
+        <div class="empty-state" data-needs-result>
+          <svg class="ic"><use href="#i-upload-file"/></svg>
+          <p>먼저 엑셀 파일을 올려 정리본을 만들어 주세요.</p>
+          <button class="btn btn-primary" type="button" data-goto="upload">파일 업로드로 이동</button>
+        </div>
+
+        <div class="stack" data-has-result hidden>
+          <div class="card dual">
+            <div class="dual-box">
+              <div class="dual-top"><span class="eyebrow-sm">검증 대상 (정리본)</span><span id="bm-target-rows" class="caption ok-text"></span></div>
+              <span id="bm-target-name" class="dual-name">-</span>
+              <span class="caption muted">이 브라우저에서 만든 정리본</span>
+            </div>
+            <div class="dual-mid"><svg class="ic"><use href="#i-sync"/></svg></div>
+            <div class="dual-box">
+              <div class="dual-top">
+                <span class="eyebrow-sm">기준 정답 (CSV)</span>
+                <label class="link-btn">
+                  <span id="ans-pick-label">파일 선택</span>
+                  <input id="answer-input" type="file" accept=".csv,text/csv" class="visually-hidden">
+                </label>
+              </div>
+              <span id="ans-file" class="dual-name">선택된 정답 파일 없음</span>
+              <span id="ans-file-sub" class="caption muted">정답 파일은 이 브라우저에서만 읽고 저장·전송하지 않습니다.</span>
+            </div>
+          </div>
+
+          <div id="ans-result" class="stack"></div>
+
+          <div class="footnote"><svg class="ic"><use href="#i-info"/></svg>정답 파일은 프로젝트 폴더나 서버에 저장되지 않으며, 페이지를 닫으면 메모리에서 사라집니다.</div>
+        </div>
+      </section>
+
+      <footer class="foot caption muted">
+        엑셀 처리: SheetJS Community Edition 0.20.3 (Apache-2.0, <code>lib/LICENSE</code>) · 글꼴: Pretendard (SIL OFL 1.1, <code>lib/fonts/LICENSE-Pretendard.txt</code>)
+      </footer>
+    </div>
+  </main>
+
+  <script src="lib/xlsx.full.min.js"></script>
+  <script src="clean.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
